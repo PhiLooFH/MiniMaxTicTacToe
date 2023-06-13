@@ -18,11 +18,11 @@ public class game implements ActionListener {
     private JButton seven;
     private JButton eight;
     private JButton nine;
-    private JButton buttons[] = new JButton[9];
-    private int turnCounter = 0;
-    private int field[] = new int[9];
+    private JButton buttons[][] = new JButton[3][3];
+    private int field[][] = new int[3][3];
     private player playerList[] = new player[2];
     private player currentPlayer;
+    private int turnCounter = 0;
 
     public JFrame getFrame() {
         return this.frame;
@@ -44,8 +44,8 @@ public class game implements ActionListener {
     public void initControls() {
 
         this.currentPlayer = this.playerList[0];
-        playerList[0].setMarker(1);
-        playerList[1].setMarker(2);
+        playerList[0].setMarker('1');
+        playerList[1].setMarker('2');
 
         this.one = new JButton(" ");
         this.one.addActionListener(this);
@@ -92,192 +92,240 @@ public class game implements ActionListener {
         this.nine.setFocusPainted(false);
         this.frame.getContentPane().add(this.nine);
 
-        this.buttons[0] = this.one;
-        this.buttons[1] = this.two;
-        this.buttons[2] = this.three;
-        this.buttons[3] = this.four;
-        this.buttons[4] = this.five;
-        this.buttons[5] = this.six;
-        this.buttons[6] = this.seven;
-        this.buttons[7] = this.eight;
-        this.buttons[8] = this.nine;
+        this.buttons[0][0] = this.one;
+        this.buttons[0][1] = this.two;
+        this.buttons[0][2] = this.three;
+        this.buttons[1][0] = this.four;
+        this.buttons[1][1] = this.five;
+        this.buttons[1][2] = this.six;
+        this.buttons[2][0] = this.seven;
+        this.buttons[2][1] = this.eight;
+        this.buttons[2][2] = this.nine;
 
-        if(this.currentPlayer.isAi()) {
-            //currentPlayer.getBestPossibleMove(this.field);
-            System.out.println(this.findBestMove());
-            ActionEvent event = new ActionEvent(this.buttons[this.findBestMove()], ActionEvent.ACTION_PERFORMED, "Click");
-            for (ActionListener listener : this.buttons[this.findBestMove()].getActionListeners()) {
-                listener.actionPerformed(event);
-            }
-        }
+        opponentMove();
     }
 
-    private boolean proofWinCondition() {
-        boolean result =
-                (this.field[0] > 0 && this.field[0] == this.field[1] && this.field[1] == this.field[2]) ||
-                (this.field[0] > 0 && this.field[0] == this.field[3] && this.field[3] == this.field[6]) ||
-                (this.field[4] > 0 && this.field[4] == this.field[1] && this.field[4] == this.field[7]) ||
-                (this.field[4] > 0 && this.field[4] == this.field[3] && this.field[4] == this.field[5]) ||
-                (this.field[4] > 0 && this.field[4] == this.field[0] && this.field[4] == this.field[8]) ||
-                (this.field[4] > 0 && this.field[4] == this.field[6] && this.field[4] == this.field[2]) ||
-                (this.field[8] > 0 && this.field[8] == this.field[5] && this.field[5] == this.field[2]) ||
-                (this.field[8] > 0 && this.field[8] == this.field[7] && this.field[7] == this.field[6]);
-        //oben links - mitte - unten rechts
-        return result;
+    private boolean proofWinCondition(char symbol) {
+        for (int i = 0; i < 3; i++) {
+            if (field[i][0] == symbol && field[i][1] == symbol && field[i][2] == symbol) {
+                return true;
+            }
+        }
+
+        // Check columns
+        for (int j = 0; j < 3; j++) {
+            if (field[0][j] == symbol && field[1][j] == symbol && field[2][j] == symbol) {
+                return true;
+            }
+        }
+
+        // Check diagonals
+        if (field[0][0] == symbol && field[1][1] == symbol && field[2][2] == symbol) {
+            return true;
+        }
+
+        if (field[2][0] == symbol && field[1][1] == symbol && field[0][2] == symbol) {
+            return true;
+        }
+
+        return false;
+
+    }
+
+    private boolean isMovesLeft()
+    {
+        for (int i = 0; i<3; i++)
+            for (int j = 0; j<3; j++)
+                if (field[i][j]== 0)
+                    return true;
+        return false;
     }
     
     private player getOtherPlayer(player comparePlayer) {
         return Arrays.stream(playerList).filter(player -> !player.equals(comparePlayer)).findFirst().get();
     }
 
-    private player checkWinningPlayerOrNull() {
-        player returnPlayer = new player("_");
-        if(proofWinCondition()) {
-            returnPlayer = this.getOtherPlayer(this.currentPlayer);
-        }
 
-        return returnPlayer;
-    }
 
     public void actionPerformed(ActionEvent e) {
-        int i = 0;
-        if(e.getSource() == this.one){
+        int row = -1;
+        int col = -1;
+        Object source = e.getSource();
+
+        if (source == this.one) {
             this.one.setText(this.currentPlayer.getCharacter());
             this.one.setEnabled(false);
-        } else if(e.getSource() == this.two){
+            row = 0;
+            col =0;
+        } else if (source == this.two) {
             this.two.setText(this.currentPlayer.getCharacter());
             this.two.setEnabled(false);
-            i = 1;
-        } else if(e.getSource() == this.three) {
+            row = 0;
+            col = 1;
+        } else if (source == this.three) {
             this.three.setText(this.currentPlayer.getCharacter());
             this.three.setEnabled(false);
-            i = 2;
-        } else if(e.getSource() == this.four) {
+            row = 0;
+            col = 2;
+        } else if (source == this.four) {
             this.four.setText(this.currentPlayer.getCharacter());
             this.four.setEnabled(false);
-            i = 3;
-        } else if(e.getSource() == this.five) {
+            row = 1;
+            col = 0;
+        } else if (source == this.five) {
             this.five.setText(this.currentPlayer.getCharacter());
             this.five.setEnabled(false);
-            i = 4;
-        } else if(e.getSource() == this.six) {
+            row = 1;
+            col = 1;
+        } else if (source == this.six) {
             this.six.setText(this.currentPlayer.getCharacter());
             this.six.setEnabled(false);
-            i = 5;
-        } else if(e.getSource() == this.seven) {
+            row = 1;
+            col = 2;
+        } else if (source == this.seven) {
             this.seven.setText(this.currentPlayer.getCharacter());
             this.seven.setEnabled(false);
-            i = 6;
-        } else if(e.getSource() == this.eight) {
+            row = 2;
+            col = 0;
+        } else if (source == this.eight) {
             this.eight.setText(this.currentPlayer.getCharacter());
             this.eight.setEnabled(false);
-            i = 7;
-        } else if(e.getSource() == this.nine) {
+            row = 2;
+            col = 1;
+        } else if (source == this.nine) {
             this.nine.setText(this.currentPlayer.getCharacter());
             this.nine.setEnabled(false);
-            i = 8;
+            row = 2;
+            col = 2;
         }
 
         //Write PlayerSymbol into choosen field
-        this.field[i] = currentPlayer.getMarker();
+        this.field[row][col] = currentPlayer.getMarker();
 
-        //change currentPlayer to the player in playerList that is currently not currentPlayer
-        this.currentPlayer = this.getOtherPlayer(this.currentPlayer);
+        changePlayer();
 
         turnCounter++;
 
         //From round 5 on a Win is possible so check if someone won
         if(this.turnCounter >= 5) {
-            if(this.proofWinCondition()) {
+            if(this.proofWinCondition(getOtherPlayer(this.currentPlayer).getMarker())) {
                 JOptionPane.showMessageDialog(this.frame, "'"+
                        this.getOtherPlayer(this.currentPlayer).getCharacter()+"'"+" wins!");
                 this.resetBoard();
             }
-            if(this.turnCounter == 9 && !this.proofWinCondition()) {
+            if(this.turnCounter == 9 && !this.proofWinCondition(getOtherPlayer(this.currentPlayer).getMarker())) {
                 JOptionPane.showMessageDialog(this.frame, "Draw!");
                 this.resetBoard();
             }
         }
+
+        //change currentPlayer to the player in playerList that is currently not currentPlayer
+
+        opponentMove();
+    }
+
+    private void opponentMove() {
         if(this.currentPlayer.isAi()) {
             //currentPlayer.getBestPossibleMove(this.field);
-            System.out.println(this.findBestMove());
-            ActionEvent event = new ActionEvent(this.buttons[this.findBestMove()], ActionEvent.ACTION_PERFORMED, "Click");
-            for (ActionListener listener : this.buttons[this.findBestMove()].getActionListeners()) {
+            move bestMove = this.findBestMove();
+            System.out.println(bestMove.getCol() + " " + bestMove.getRow());
+            ActionEvent event = new ActionEvent(this.buttons[bestMove.getRow()][bestMove.getCol()], ActionEvent.ACTION_PERFORMED, "Click");
+            for (ActionListener listener : this.buttons[bestMove.getRow()][bestMove.getCol()].getActionListeners()) {
                 listener.actionPerformed(event);
             }
         }
     }
+
+    private void changePlayer() {
+        this.currentPlayer = this.getOtherPlayer(this.currentPlayer);
+    }
+
     private void resetBoard() {
-        for(int j = 0; j < this.buttons.length; j++) {
-            this.buttons[j].setEnabled(true);
-            this.buttons[j].setText(" ");
-            this.field[j] = 0;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                buttons[i][j].setEnabled(true);
+                buttons[i][j].setText(" ");
+            }
+        }
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                this.field[i][j] = 0;
+            }
         }
         this.turnCounter = 0;
         this.currentPlayer = this.playerList[0];
     }
 
-    private int evaluatePosition(player maximizingPlayer){
-        player minimzingPlayer = this.getOtherPlayer(maximizingPlayer);
+    private move findBestMove() {
+        int bestVal = -1000;
+        move bestMove = new move();
 
-        if(this.checkWinningPlayerOrNull().equals(maximizingPlayer)) {
-            return 10;
-        } else if(this.checkWinningPlayerOrNull().equals(minimzingPlayer)) {
-            return -10;
-        } else if (this.turnCounter == 9 && !this.proofWinCondition()) {
-            return 0;
+        for(int i = 0; i < 3; i++) {
+            for(int j = 0; j < 3; j++) {
+                if(this.field[i][j] == 0) {
+                    this.field[i][j] = currentPlayer.getMarker();
+                    int moveVal = miniMax(0, false);
+                    this.field[i][j] = 0;
+
+                    if(moveVal > bestVal) {
+                        bestMove.setRow(i);
+                        bestMove.setCol(j);
+                        bestVal = moveVal;
+                    }
+                }
+            }
+
         }
-        return 5;
+        return bestMove;
     }
 
-    private int miniMax(int depth, boolean isMax, player maximizingPlayer) {
+    private int miniMax(int depth, boolean isMax) {
         
-        int score = this.evaluatePosition(maximizingPlayer);
+        int score = this.evaluatePosition(currentPlayer);
 
         if(score == 10) return score;
 
         if(score == -10) return score;
 
         if(score == 0) return score;
-
+        int best;
         if(isMax) {
-            int best = -1000;
-            for(int i = 0; i < 9; i++) {
-                if(this.field[i] == 0) {
-                    this.field[i] = maximizingPlayer.getMarker();
-                    best = Math.max(best, miniMax(depth+1, !isMax, maximizingPlayer));
-                    this.field[i] = 0;
+            best = -1000;
+            for(int i = 0; i < 3; i++) {
+                for(int j = 0; j < 3; j++) {
+                    if(this.field[i][j] == 0) {
+                        this.field[i][j] = currentPlayer.getMarker();
+                        best = Math.max(best, miniMax(depth+1, false));
+                        this.field[i][j] = 0;
+                    }
                 }
+
             }
-            return best;
         } else {
-            int best = 1000;
-            for(int i = 0; i < 9; i++) {
-                if(this.field[i] == 0) {
-                    this.field[i] = this.getOtherPlayer(maximizingPlayer).getMarker();
-                    best = Math.min(best, miniMax(depth+1, !isMax, maximizingPlayer));
-                    this.field[i] = 0;
+            best = 1000;
+            for(int i = 0; i < 3; i++) {
+                for(int j = 0; j < 3; j++) {
+                    if(this.field[i][j] == 0) {
+                        this.field[i][j] = this.getOtherPlayer(currentPlayer).getMarker();
+                        best = Math.min(best, miniMax(depth+1, true));
+                        this.field[i][j] = 0;
+                    }
                 }
+
             }
-            return best;
         }
+        return best;
     }
 
-    private int findBestMove() {
-        int bestVal = -1000;
-        int bestMove = 0;
+    private int evaluatePosition(player maximizingPlayer){
 
-        for(int i = 0; i < 9; i++) {
-            if(this.field[i] == 0) {
-                this.field[i] = this.currentPlayer.getMarker();
-                int moveVal = miniMax(0, false, currentPlayer);
-                this.field[i] = 0;
-
-                if(moveVal > bestVal) {
-                    bestMove = i;
-                }
-            }
+        if(proofWinCondition(maximizingPlayer.getMarker())) {
+            return 10;
+        } else if(proofWinCondition(getOtherPlayer(maximizingPlayer).getMarker())) {
+            return -10;
+        } else if (!isMovesLeft()) {
+            return 0;
         }
-        return bestMove;
+        return 5;
     }
 }

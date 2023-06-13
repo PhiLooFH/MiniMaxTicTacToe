@@ -1,7 +1,7 @@
 public class player {
     private String Character;
     private boolean Ai;
-    private int Marker;
+    private char Marker;
 
     //self playing player
     public player(String Character) {
@@ -26,11 +26,11 @@ public class player {
         return Ai;
     }
 
-    public int getMarker() {
+    public char getMarker() {
         return this.Marker;
     }
 
-    public void setMarker(int marker) {
+    public void setMarker(char marker) {
         Marker = marker;
     }
 }
