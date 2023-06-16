@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.security.InvalidParameterException;
 import java.util.Arrays;
+import java.util.Random;
 
 public class game implements ActionListener {
 
@@ -35,6 +36,19 @@ public class game implements ActionListener {
         this.frame = new JFrame("Tic Tac Toe");
         this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.frame.setSize(600, 600);
+
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int screenWidth = screenSize.width;
+        int screenHeight = screenSize.height;
+
+        // Calculate the position to center the frame
+        int frameWidth = this.frame.getSize().width;
+        int frameHeight = this.frame.getSize().height;
+        int posX = (screenWidth - frameWidth) / 2;
+        int posY = (screenHeight - frameHeight) / 2;
+
+        // Set the frame position
+        this.frame.setLocation(posX, posY);
         this.layout = new GridLayout(3,3);
         this.frame.setLayout(layout);
         this.playerList[0] = playerOne;
@@ -42,6 +56,20 @@ public class game implements ActionListener {
     }
 
     public void initControls() {
+
+        try {
+            UIManager.setLookAndFeel(
+                    UIManager.getSystemLookAndFeelClassName()
+            );
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (UnsupportedLookAndFeelException e) {
+            throw new RuntimeException(e);
+        }
 
         this.currentPlayer = this.playerList[0];
         playerList[0].setMarker('1');
@@ -227,13 +255,38 @@ public class game implements ActionListener {
     private void opponentMove() {
         if(this.currentPlayer.isAi()) {
             //currentPlayer.getBestPossibleMove(this.field);
-            move bestMove = this.findBestMove();
-            System.out.println(bestMove.getCol() + " " + bestMove.getRow());
+            move bestMove = new move();
+            if(this.turnCounter > 0) {
+                bestMove = this.findBestMove();
+            } else {
+                bestMove = this.getRandomMove();
+            }
+
             ActionEvent event = new ActionEvent(this.buttons[bestMove.getRow()][bestMove.getCol()], ActionEvent.ACTION_PERFORMED, "Click");
             for (ActionListener listener : this.buttons[bestMove.getRow()][bestMove.getCol()].getActionListeners()) {
                 listener.actionPerformed(event);
             }
         }
+    }
+
+    private move getRandomMove() {
+        move randomMove = new move();
+        Random random = new Random();
+        randomMove.setRow(random.nextInt(3));
+        randomMove.setCol(random.nextInt(3));
+        System.out.println(randomMove.getRow());
+        System.out.println(randomMove.getCol());
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (field[randomMove.getRow()][randomMove.getCol()] == 0) {
+                    return randomMove;
+                } else {
+                    randomMove.setRow(random.nextInt(3));
+                    randomMove.setCol(random.nextInt(3));
+                }
+            }
+        }
+        return randomMove;
     }
 
     private void changePlayer() {
@@ -283,11 +336,12 @@ public class game implements ActionListener {
         
         int score = this.evaluatePosition(currentPlayer);
 
-        if(score == 10) return score;
+        //subtract growing depth to get shorter path when moves have the same rating
+        if(score == 10) return score-depth;
 
-        if(score == -10) return score;
+        if(score == -10) return score-depth;
 
-        if(score == 0) return score;
+        if(score == 0) return score-depth;
         int best;
         if(isMax) {
             best = -1000;
